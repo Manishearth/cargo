@@ -1,5 +1,5 @@
 pub use self::cargo_clean::{clean, CleanOptions};
-pub use self::cargo_compile::{compile, compile_pkg, CompileOptions};
+pub use self::cargo_compile::{compile, compile_pkg, CompileOptions, source_ids_from_config};
 pub use self::cargo_read_manifest::{read_manifest,read_package,read_packages};
 pub use self::cargo_rustc::{compile_targets, Compilation, Layout, Kind, rustc_version};
 pub use self::cargo_rustc::{Context, LayoutProxy};

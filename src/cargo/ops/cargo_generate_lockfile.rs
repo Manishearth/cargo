@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::os;
 
 use core::PackageId;
 use core::registry::PackageRegistry;
@@ -6,7 +7,7 @@ use core::{MultiShell, Source, Resolve};
 use core::resolver::Method;
 use ops;
 use sources::{PathSource};
-use util::config::{Config};
+use util::config::{all_configs, Config};
 use util::{CargoResult, human};
 
 pub struct UpdateOptions<'a> {
@@ -22,8 +23,12 @@ pub fn generate_lockfile(manifest_path: &Path,
     let mut source = try!(PathSource::for_path(&manifest_path.dir_path()));
     try!(source.update());
     let package = try!(source.get_root_package());
+    let user_configs = try!(all_configs(try!(os::getcwd())));
+    let override_ids = try!(ops::source_ids_from_config(&user_configs,
+                                                   package.get_root()));
     let mut config = try!(Config::new(shell, None, None));
     let mut registry = PackageRegistry::new(&mut config);
+    try!(registry.add_overrides(override_ids));
     let resolve = try!(ops::resolve_with_previous(&mut registry, &package,
                                                   Method::Everything,
                                                   None, None));
@@ -34,8 +39,13 @@ pub fn generate_lockfile(manifest_path: &Path,
 pub fn update_lockfile(manifest_path: &Path,
                        opts: &mut UpdateOptions) -> CargoResult<()> {
     let mut source = try!(PathSource::for_path(&manifest_path.dir_path()));
+
     try!(source.update());
     let package = try!(source.get_root_package());
+
+    let user_configs = try!(all_configs(try!(os::getcwd())));
+    let override_ids = try!(ops::source_ids_from_config(&user_configs,
+                                                   package.get_root()));
 
     let previous_resolve = match try!(ops::load_pkg_lockfile(&package)) {
         Some(resolve) => resolve,
@@ -49,6 +59,7 @@ pub fn update_lockfile(manifest_path: &Path,
 
     let mut config = try!(Config::new(opts.shell, None, None));
     let mut registry = PackageRegistry::new(&mut config);
+    try!(registry.add_overrides(override_ids));
     let mut to_avoid = HashSet::new();
 
     match opts.to_update {

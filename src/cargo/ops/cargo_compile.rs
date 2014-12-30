@@ -155,7 +155,7 @@ pub fn compile_pkg(package: &Package, options: &mut CompileOptions)
     return Ok(ret);
 }
 
-fn source_ids_from_config(configs: &HashMap<String, config::ConfigValue>,
+pub fn source_ids_from_config(configs: &HashMap<String, config::ConfigValue>,
                           cur_path: Path) -> CargoResult<Vec<SourceId>> {
     debug!("loaded config; configs={}", configs);
 
